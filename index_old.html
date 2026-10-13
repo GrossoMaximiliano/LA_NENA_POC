@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#fff8f0">
+<meta name="description" content="La Nena Helados — Sistema de puntos: mira productos, precios y canjea tus puntos por premios.">
+<title>La Nena · Helados — Sistema de Puntos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     La Nena · Helados — Mobile first
+     Base = teléfono. Mejoras con min-width: 560px / 840px / 1080px
+     ============================================================ */
+  :root{
+    --rosa:#ff5e9c;
+    --rosa-osc:#e83d82;
+    --rosa-claro:#ffe3ef;
+    --uva:#8b5cf6;
+    --crema:#fff8f0;
+    --chocolate:#3f2a2e;
+    --chocolate-suave:#7a5c62;
+    --menta:#3ecfae;
+    --vainilla:#ffe9c7;
+    --blanco:#ffffff;
+    --sombra:0 10px 30px rgba(63,42,46,.12);
+    --radio:22px;
+    --header-h:64px;
+    --bnav-h:64px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Nunito',system-ui,-apple-system,'Segoe UI',sans-serif;
+    background:
+      radial-gradient(600px 300px at 90% -50px, #ffe3ef 0%, transparent 60%),
+      radial-gradient(500px 260px at -80px 30%, #ffeede 0%, transparent 55%),
+      var(--crema);
+    color:var(--chocolate);
+    min-height:100vh;
+    overflow-x:hidden;
+    /* espacio para la barra inferior fija en móvil */
+    padding-bottom:calc(var(--bnav-h) + env(safe-area-inset-bottom));
+  }
+  h1,h2,h3,.brand,.points-pill,.price,.cost{font-family:'Baloo 2',cursive,system-ui,sans-serif}
+  section{scroll-margin-top:calc(var(--header-h) + 8px)}
+  button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+
+  /* ---------- Header (compacto en móvil) ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,248,240,.88);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid rgba(63,42,46,.08);
+  }
+  .header-inner{
+    max-width:1100px;margin:0 auto;
+    padding:10px 16px;
+    min-height:var(--header-h);
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .brand{font-size:1.25rem;font-weight:800;display:flex;align-items:center;gap:9px;letter-spacing:.2px}
+  .brand .logo{
+    width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:1.25rem;flex-shrink:0;
+    background:linear-gradient(135deg,var(--rosa),var(--uva));
+    box-shadow:0 6px 14px rgba(255,94,156,.4);
+  }
+  .brand small{display:block;font-family:'Nunito';font-size:.58rem;font-weight:700;color:var(--chocolate-suave);letter-spacing:1.4px;text-transform:uppercase;line-height:1;margin-top:2px}
+  /* Nav superior: solo tablet/desktop (en móvil hay barra inferior) */
+  .top-nav{display:none}
+  .points-pill{
+    display:flex;align-items:center;gap:7px;
+    background:linear-gradient(135deg,var(--rosa),var(--uva));
+    color:#fff;font-weight:700;font-size:.95rem;
+    padding:8px 15px;border-radius:999px;white-space:nowrap;
+    box-shadow:0 6px 16px rgba(255,94,156,.35);
+  }
+  .points-pill .star{filter:drop-shadow(0 2px 3px rgba(0,0,0,.2));animation:twinkle 2.4s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.15) rotate(12deg)}}
+
+  /* ---------- Barra de navegación inferior (solo móvil) ---------- */
+  .bottom-nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:60;
+    display:flex;justify-content:space-around;align-items:stretch;
+    height:calc(var(--bnav-h) + env(safe-area-inset-bottom));
+    padding-bottom:env(safe-area-inset-bottom);
+    background:rgba(255,255,255,.96);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border-top:1px solid rgba(63,42,46,.1);
+    box-shadow:0 -6px 24px rgba(63,42,46,.08);
+  }
+  .bn-item{
+    flex:1;max-width:120px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    text-decoration:none;color:var(--chocolate-suave);
+    font-weight:800;font-size:.68rem;letter-spacing:.3px;
+    transition:color .2s;
+  }
+  .bn-item .bn-ico{
+    font-size:1.3rem;line-height:1;
+    width:44px;height:30px;display:grid;place-items:center;border-radius:999px;
+    transition:.2s;
+  }
+  .bn-item.active{color:var(--rosa-osc)}
+  .bn-item.active .bn-ico{background:var(--rosa-claro);transform:translateY(-2px)}
+
+  /* ---------- Hero (apilado en móvil) ---------- */
+  .hero{max-width:1100px;margin:0 auto;padding:30px 16px 12px;display:grid;grid-template-columns:1fr;gap:26px;align-items:center}
+  .hero h1{font-size:clamp(1.9rem,8vw,3.1rem);line-height:1.12;font-weight:800}
+  .hero h1 span{background:linear-gradient(90deg,var(--rosa),var(--uva));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{margin-top:12px;color:var(--chocolate-suave);font-size:1rem;max-width:46ch;line-height:1.6}
+  .hero-ctas{display:flex;gap:10px;margin-top:22px}
+  .hero-ctas .btn{flex:1;justify-content:center;min-height:50px}
+  .btn{
+    border:none;cursor:pointer;font-family:'Baloo 2';font-weight:700;font-size:1rem;
+    padding:13px 22px;border-radius:999px;transition:.2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+  }
+  .btn-primary{background:linear-gradient(135deg,var(--rosa),var(--rosa-osc));color:#fff;box-shadow:0 8px 20px rgba(255,94,156,.4)}
+  .btn-primary:active{transform:scale(.97)}
+  .btn-ghost{background:#fff;color:var(--chocolate);border:2px solid rgba(63,42,46,.12)}
+  .btn-ghost:active{border-color:var(--rosa)}
+
+  /* tarjeta miembro: recta en móvil, inclinada en desktop */
+  .member-card{
+    position:relative;border-radius:24px;padding:22px 22px 20px;color:#fff;overflow:hidden;
+    background:linear-gradient(135deg,#ff5e9c 0%,#b565d8 55%,#8b5cf6 100%);
+    box-shadow:0 18px 40px rgba(139,92,246,.35);
+  }
+  .member-card::before,.member-card::after{
+    content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.14);
+  }
+  .member-card::before{width:190px;height:190px;top:-70px;right:-50px}
+  .member-card::after{width:120px;height:120px;bottom:-50px;left:-30px}
+  .mc-top{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.9}
+  .mc-points{margin:14px 0 6px;font-family:'Baloo 2'}
+  .mc-points .num{font-size:2.8rem;font-weight:800;line-height:1}
+  .mc-points .lbl{font-size:.78rem;font-weight:700;opacity:.85;letter-spacing:.5px}
+  .mc-number{font-family:'Baloo 2';font-weight:600;letter-spacing:3px;font-size:.9rem;opacity:.85}
+  .mc-progress{margin-top:16px;position:relative;z-index:1}
+  .mc-progress .bar{height:10px;border-radius:99px;background:rgba(255,255,255,.25);overflow:hidden}
+  .mc-progress .fill{height:100%;border-radius:99px;background:#fff;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .mc-progress .hint{font-size:.8rem;font-weight:700;margin-top:8px;opacity:.95}
+
+  /* ---------- Secciones ---------- */
+  section{max-width:1100px;margin:0 auto;padding:44px 16px 8px}
+  .section-head{margin-bottom:20px}
+  .section-head h2{font-size:1.55rem;font-weight:800;display:flex;align-items:center;gap:10px}
+  .section-head h2 .dot{width:13px;height:13px;border-radius:50%;background:linear-gradient(135deg,var(--rosa),var(--uva));display:inline-block;flex-shrink:0}
+  .section-head p{color:var(--chocolate-suave);font-weight:600;margin-top:4px;font-size:.95rem}
+
+  /* chips: fila deslizable en móvil */
+  .chips{
+    display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;
+    padding:4px 2px 12px;margin:0 -16px;padding-left:16px;padding-right:16px;
+    scrollbar-width:none;-webkit-overflow-scrolling:touch;
+  }
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto;
+    cursor:pointer;font-family:'Nunito';font-weight:700;font-size:.9rem;
+    padding:11px 18px;border-radius:999px;background:#fff;color:var(--chocolate-suave);
+    border:2px solid rgba(63,42,46,.1);transition:.2s;min-height:44px;
+  }
+  .chip:hover{border-color:var(--rosa);color:var(--rosa-osc)}
+  .chip.active{background:linear-gradient(135deg,var(--rosa),var(--rosa-osc));color:#fff;border-color:transparent;box-shadow:0 6px 14px rgba(255,94,156,.35)}
+
+  /* grid productos: 1 col móvil → fluido hacia arriba */
+  .grid{display:grid;grid-template-columns:1fr;gap:16px}
+  .card{
+    background:var(--blanco);border-radius:var(--radio);padding:20px;position:relative;
+    box-shadow:var(--sombra);border:1px solid rgba(63,42,46,.05);
+    transition:.25s;display:flex;flex-direction:column;
+  }
+  .card:active{transform:scale(.99)}
+  .card .emoji{
+    width:66px;height:66px;border-radius:20px;display:grid;place-items:center;font-size:2.2rem;
+    background:linear-gradient(135deg,var(--rosa-claro),#fff0e6);margin-bottom:12px;
+  }
+  .card h3{font-size:1.15rem;font-weight:700;line-height:1.2}
+  .card .desc{color:var(--chocolate-suave);font-size:.9rem;font-weight:600;margin-top:4px;flex:1}
+  .card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px;gap:8px}
+  .price{font-size:1.3rem;font-weight:800;color:var(--rosa-osc)}
+  .earn{
+    font-size:.78rem;font-weight:800;color:var(--menta);
+    background:rgba(62,207,174,.12);padding:4px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .btn-buy{
+    border:none;cursor:pointer;width:100%;margin-top:14px;min-height:48px;
+    font-family:'Baloo 2';font-weight:700;font-size:.98rem;color:var(--chocolate);
+    background:var(--vainilla);padding:11px;border-radius:14px;transition:.2s;
+  }
+  .btn-buy:active{transform:scale(.98)}
+
+  /* ---------- Recompensas ---------- */
+  #canjear{background:
+    radial-gradient(700px 340px at 50% -80px, rgba(139,92,246,.10), transparent 65%);
+  }
+  .rewards-grid{display:grid;grid-template-columns:1fr;gap:16px}
+  .reward{
+    background:#fff;border-radius:var(--radio);padding:22px 20px;text-align:center;position:relative;
+    box-shadow:var(--sombra);border:1px solid rgba(63,42,46,.05);transition:.25s;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .reward .emoji{
+    width:76px;height:76px;border-radius:50%;display:grid;place-items:center;font-size:2.4rem;
+    background:linear-gradient(135deg,var(--rosa-claro),#efe4ff);margin-bottom:10px;
+  }
+  .reward h3{font-size:1.1rem}
+  .reward .desc{font-size:.85rem;color:var(--chocolate-suave);font-weight:600;margin-top:3px}
+  .cost{
+    margin:12px 0;display:inline-flex;align-items:center;gap:6px;
+    font-size:1.4rem;font-weight:800;color:var(--uva);
+  }
+  .cost small{font-size:.85rem;font-weight:700;color:var(--chocolate-suave)}
+  .btn-redeem{
+    border:none;cursor:pointer;font-family:'Baloo 2';font-weight:700;font-size:.98rem;
+    width:100%;min-height:48px;padding:12px;border-radius:14px;color:#fff;transition:.2s;
+    background:linear-gradient(135deg,var(--menta),#2bb593);
+  }
+  .btn-redeem:active:not(:disabled){transform:scale(.98)}
+  .btn-redeem:disabled{background:#e8dee6;color:#b3a3ad;cursor:not-allowed}
+  .reward .missing{font-size:.78rem;font-weight:700;color:var(--rosa-osc);margin-top:8px;min-height:1em}
+
+  /* ---------- Cómo funciona ---------- */
+  .steps{display:grid;grid-template-columns:1fr;gap:16px}
+  .step{
+    background:#fff;border-radius:var(--radio);padding:26px 22px;text-align:center;
+    box-shadow:var(--sombra);border:1px solid rgba(63,42,46,.05);position:relative;
+  }
+  .step .n{
+    width:46px;height:46px;margin:0 auto 12px;border-radius:50%;display:grid;place-items:center;
+    font-family:'Baloo 2';font-weight:800;font-size:1.3rem;color:#fff;
+    background:linear-gradient(135deg,var(--rosa),var(--uva));box-shadow:0 8px 16px rgba(255,94,156,.35);
+  }
+  .step h3{font-size:1.1rem;margin-bottom:6px}
+  .step p{color:var(--chocolate-suave);font-size:.92rem;font-weight:600;line-height:1.55}
+  .steps-cta{
+    margin-top:20px;text-align:center;background:linear-gradient(135deg,var(--rosa-claro),#efe4ff);
+    border-radius:var(--radio);padding:20px 18px;font-weight:700;color:var(--chocolate);font-size:.95rem;
+  }
+
+  /* ---------- Mis puntos ---------- */
+  .wallet{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+  .balance-box{
+    background:linear-gradient(135deg,#2d2340,#4a3157);color:#fff;border-radius:var(--radio);
+    padding:26px 22px;box-shadow:0 18px 40px rgba(45,35,64,.35);
+  }
+  .balance-box .lbl{font-size:.78rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;opacity:.7}
+  .balance-box .big{font-family:'Baloo 2';font-size:3rem;font-weight:800;line-height:1.1;margin:8px 0 2px}
+  .balance-box .sub{font-size:.9rem;font-weight:600;opacity:.8}
+  .balance-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+  .balance-actions .btn-mini{flex:1;min-width:150px;min-height:46px}
+  .btn-mini{
+    border:none;cursor:pointer;font-family:'Nunito';font-weight:800;font-size:.85rem;
+    padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.15);color:#fff;transition:.2s;
+  }
+  .btn-mini:active{background:rgba(255,255,255,.3)}
+  .history{background:#fff;border-radius:var(--radio);box-shadow:var(--sombra);border:1px solid rgba(63,42,46,.05);overflow:hidden}
+  .history h3{padding:16px 18px;border-bottom:1px solid rgba(63,42,46,.07);font-size:1.08rem}
+  .history ul{list-style:none;max-height:380px;overflow-y:auto}
+  .history li{display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid rgba(63,42,46,.05)}
+  .history li:last-child{border-bottom:none}
+  .h-ico{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;font-size:1.1rem;flex-shrink:0}
+  .h-ico.plus{background:rgba(62,207,174,.14)}
+  .h-ico.minus{background:var(--rosa-claro)}
+  .h-info{flex:1;min-width:0}
+  .h-info .t{font-weight:800;font-size:.92rem}
+  .h-info .d{font-size:.76rem;color:var(--chocolate-suave);font-weight:600}
+  .h-amt{font-family:'Baloo 2';font-weight:800;font-size:1rem;white-space:nowrap}
+  .h-amt.plus{color:var(--menta)}
+  .h-amt.minus{color:var(--rosa-osc)}
+  .empty{padding:36px 18px;text-align:center;color:var(--chocolate-suave);font-weight:600}
+
+  footer{
+    margin-top:56px;padding:28px 20px calc(20px + env(safe-area-inset-bottom));text-align:center;
+    color:var(--chocolate-suave);font-weight:600;font-size:.88rem;
+    border-top:1px solid rgba(63,42,46,.08);
+  }
+  footer .brand-mini{font-family:'Baloo 2';font-weight:800;color:var(--chocolate);font-size:1.05rem}
+
+  /* ---------- Modal: bottom sheet en móvil ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(45,30,35,.55);backdrop-filter:blur(4px);
+    display:grid;align-items:end;z-index:100;
+    opacity:0;pointer-events:none;transition:.25s;
+  }
+  .overlay.open{opacity:1;pointer-events:auto}
+  .modal{
+    background:var(--crema);border-radius:26px 26px 0 0;max-width:100%;width:100%;
+    padding:14px 22px calc(24px + env(safe-area-inset-bottom));
+    text-align:center;transform:translateY(100%);transition:.3s cubic-bezier(.2,.8,.2,1);
+    box-shadow:0 -20px 60px rgba(0,0,0,.35);max-height:90dvh;overflow-y:auto;
+  }
+  .overlay.open .modal{transform:translateY(0)}
+  .modal .handle{width:44px;height:5px;border-radius:99px;background:rgba(63,42,46,.18);margin:0 auto 14px}
+  .modal .big-emoji{font-size:3.6rem;line-height:1;margin-bottom:10px}
+  .modal h3{font-size:1.4rem;font-weight:800}
+  .modal .m-desc{color:var(--chocolate-suave);font-weight:600;font-size:.93rem;margin-top:5px}
+  .m-rows{margin:18px 0;background:#fff;border-radius:18px;padding:14px 18px;border:1px solid rgba(63,42,46,.06)}
+  .m-row{display:flex;justify-content:space-between;font-weight:700;font-size:.93rem;padding:6px 0}
+  .m-row span:last-child{font-family:'Baloo 2'}
+  .m-row.total{border-top:1px dashed rgba(63,42,46,.2);margin-top:6px;padding-top:12px}
+  .m-row.total span:last-child{color:var(--menta);font-weight:800}
+  .m-actions{display:flex;gap:10px}
+  .m-actions .btn{flex:1;justify-content:center;min-height:50px;padding:13px 10px}
+
+  /* ---------- Toast (sobre la barra inferior en móvil) ---------- */
+  #toast{
+    position:fixed;left:50%;bottom:calc(var(--bnav-h) + env(safe-area-inset-bottom) + 14px);
+    transform:translateX(-50%) translateY(110px);
+    background:var(--chocolate);color:#fff;font-weight:700;font-size:.93rem;
+    padding:14px 22px;border-radius:999px;display:flex;align-items:center;gap:10px;
+    box-shadow:0 14px 34px rgba(0,0,0,.3);z-index:200;transition:.35s cubic-bezier(.2,.8,.2,1);
+    max-width:calc(100vw - 32px);text-align:center;
+  }
+  #toast.show{transform:translateX(-50%) translateY(0)}
+
+  /* ---------- Confetti ---------- */
+  .confetti{position:fixed;top:-16px;z-index:300;pointer-events:none;border-radius:3px;animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.9}}
+
+  /* ============================================================
+     Mejoras progresivas
+     ============================================================ */
+
+  /* ≥560px: grids de 2 columnas */
+  @media (min-width:560px){
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .rewards-grid{grid-template-columns:repeat(2,1fr)}
+    .steps{grid-template-columns:repeat(3,1fr)}
+    .balance-actions .btn-mini{flex:1;min-width:0}
+  }
+
+  /* ≥840px: layout de escritorio */
+  @media (min-width:840px){
+    :root{--header-h:70px}
+    body{padding-bottom:0}
+    .bottom-nav{display:none}
+    .top-nav{display:flex;gap:6px}
+    .bottom-nav + *{margin-top:0}
+    .header-inner{padding:12px 20px}
+    .brand{font-size:1.45rem}
+    .brand .logo{width:42px;height:42px;font-size:1.4rem}
+    .brand small{font-size:.66rem;letter-spacing:1.5px}
+    .top-nav a{
+      text-decoration:none;color:var(--chocolate-suave);font-weight:700;font-size:.92rem;
+      padding:8px 14px;border-radius:999px;transition:.2s;
+    }
+    .top-nav a:hover{background:var(--rosa-claro);color:var(--rosa-osc)}
+    .points-pill{font-size:1rem;padding:9px 18px}
+    .hero{grid-template-columns:1.1fr .9fr;gap:28px;padding:44px 20px 20px}
+    .hero h1{line-height:1.1}
+    .hero p{margin-top:14px;font-size:1.06rem}
+    .hero-ctas{margin-top:26px;gap:12px}
+    .hero-ctas .btn{flex:0 0 auto;min-height:0}
+    .hero-ctas .btn:hover{transform:translateY(-2px)}
+    .btn-primary:hover{box-shadow:0 12px 26px rgba(255,94,156,.5)}
+    .member-card{transform:rotate(-1.5deg);transition:.3s;border-radius:26px;padding:26px 26px 22px}
+    .member-card:hover{transform:rotate(0deg) scale(1.01)}
+    .mc-points .num{font-size:3.2rem}
+    .mc-points{margin:18px 0 6px}
+    section{padding:56px 20px 8px}
+    .section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+    .section-head h2{font-size:1.9rem}
+    .chips{flex-wrap:wrap;overflow:visible;margin:0;padding:0 0 26px}
+    .chip{min-height:0;padding:9px 18px}
+    .grid{grid-template-columns:repeat(3,1fr);gap:20px}
+    .rewards-grid{grid-template-columns:repeat(3,1fr);gap:20px}
+    .card:hover{transform:translateY(-5px);box-shadow:0 18px 40px rgba(63,42,46,.16)}
+    .reward:hover{transform:translateY(-5px)}
+    .btn-redeem:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 20px rgba(62,207,174,.4)}
+    .steps-cta{margin-top:26px;padding:22px;font-size:1rem}
+    .wallet{grid-template-columns:.9fr 1.1fr;gap:24px}
+    .balance-box{padding:30px}
+    .balance-box .big{font-size:3.4rem}
+    /* modal centrado en desktop */
+    .overlay{display:grid;place-items:center;padding:20px}
+    .modal{
+      border-radius:28px;max-width:400px;width:100%;
+      padding:32px 28px;transform:scale(.92) translateY(12px);
+      box-shadow:0 30px 70px rgba(0,0,0,.35);max-height:none;
+    }
+    .overlay.open .modal{transform:scale(1) translateY(0)}
+    .modal .handle{display:none}
+    .modal .big-emoji{font-size:4rem}
+    .modal h3{font-size:1.5rem}
+    #toast{bottom:26px;max-width:calc(100vw - 40px)}
+    footer{margin-top:70px}
+  }
+
+  /* ≥1080px: grids de 4 columnas */
+  @media (min-width:1080px){
+    .grid{grid-template-columns:repeat(4,1fr)}
+  }
+
+  /* respeta preferencia de menos movimiento */
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="logo">🍦</div>
+      <div>La Nena<small>Helados artesanales</small></div>
+    </div>
+    <nav class="top-nav">
+      <a href="#productos">Productos</a>
+      <a href="#canjear">Canjear puntos</a>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#mis-puntos">Mis puntos</a>
+    </nav>
+    <div class="points-pill"><span class="star">⭐</span><span id="pill-points">0</span> pts</div>
+  </div>
+</header>
+
+<!-- Navegación inferior: solo visible en móvil -->
+<nav class="bottom-nav" aria-label="Navegación principal">
+  <a href="#inicio" class="bn-item active"><span class="bn-ico">🏠</span>Inicio</a>
+  <a href="#productos" class="bn-item"><span class="bn-ico">🍦</span>Productos</a>
+  <a href="#canjear" class="bn-item"><span class="bn-ico">🎁</span>Canjear</a>
+  <a href="#mis-puntos" class="bn-item"><span class="bn-ico">⭐</span>Puntos</a>
+</nav>
+
+<section class="hero" id="inicio">
+  <div>
+    <h1>Helados que premian <span>tus antojos</span></h1>
+    <p>Cada compra suma puntos y cada punto te acerca a un premio delicioso. Explora nuestro menú, acumula y canjea cuando quieras.</p>
+    <div class="hero-ctas">
+      <a href="#productos" class="btn btn-primary">🍦 Ver productos</a>
+      <a href="#canjear" class="btn btn-ghost">🎁 Canjear puntos</a>
+    </div>
+  </div>
+
+  <div class="member-card">
+    <div class="mc-top"><span>Tarjeta Miembro</span><span>🍦 La Nena</span></div>
+    <div class="mc-points">
+      <div class="num" id="card-points">0</div>
+      <div class="lbl">PUNTOS DISPONIBLES</div>
+    </div>
+    <div class="mc-number">· LN 4821 5590 ·</div>
+    <div class="mc-progress">
+      <div class="bar"><div class="fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="hint" id="progress-hint"></div>
+    </div>
+  </div>
+</section>
+
+<section id="productos">
+  <div class="section-head">
+    <div>
+      <h2><span class="dot"></span> Nuestros productos</h2>
+      <p>Precios en pesos · Ganas <strong>1 punto por cada $1</strong> de tu compra</p>
+    </div>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div class="grid" id="products-grid"></div>
+</section>
+
+<section id="canjear">
+  <div class="section-head">
+    <div>
+      <h2><span class="dot"></span> Canjea tus puntos</h2>
+      <p>Elige tu premio favorito y disfrútalo gratis en tienda</p>
+    </div>
+  </div>
+  <div class="rewards-grid" id="rewards-grid"></div>
+</section>
+
+<section id="como-funciona">
+  <div class="section-head">
+    <div>
+      <h2><span class="dot"></span> Cómo funciona</h2>
+      <p>Sumar puntos es tan fácil como disfrutar un helado</p>
+    </div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="n">1</div>
+      <h3>🍦 Compra</h3>
+      <p>Pide cualquiera de nuestros productos y muestra tu tarjeta de miembro al pagar.</p>
+    </div>
+    <div class="step">
+      <div class="n">2</div>
+      <h3>⭐ Acumula</h3>
+      <p>Por cada $1 de consumo recibes 1 punto automáticamente en tu cuenta.</p>
+    </div>
+    <div class="step">
+      <div class="n">3</div>
+      <h3>🎁 Canjea</h3>
+      <p>Cuando juntes puntos suficientes, elige tu premio y ¡a disfrutar!</p>
+    </div>
+  </div>
+  <div class="steps-cta">✨ Los puntos no expiran y puedes combinarlos con promociones de la tienda.</div>
+</section>
+
+<section id="mis-puntos">
+  <div class="section-head">
+    <div>
+      <h2><span class="dot"></span> Mis puntos</h2>
+      <p>Consulta tu saldo y el detalle de todos tus movimientos</p>
+    </div>
+  </div>
+  <div class="wallet">
+    <div class="balance-box">
+      <div class="lbl">Saldo actual</div>
+      <div class="big" id="balance-points">0</div>
+      <div class="sub">puntos disponibles para canjear</div>
+      <div class="balance-actions">
+        <button class="btn-mini" onclick="simulateVisit()">🛍️ Simular una compra</button>
+        <button class="btn-mini" onclick="resetAccount()">↺ Reiniciar demo</button>
+      </div>
+    </div>
+    <div class="history">
+      <h3>📋 Historial de movimientos</h3>
+      <ul id="history-list"></ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="brand-mini">🍦 La Nena · Helados</div>
+  <div>Sistema de puntos de fidelidad · Demostración</div>
+  <div id="footer-note"></div>
+</footer>
+
+<!-- Modal de canje (bottom sheet en móvil, diálogo centrado en desktop) -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="handle"></div>
+    <div class="big-emoji" id="m-emoji">🎁</div>
+    <h3 id="m-title">Canjear premio</h3>
+    <div class="m-desc" id="m-desc"></div>
+    <div class="m-rows">
+      <div class="m-row"><span>Tus puntos actuales</span><span id="m-current">0</span></div>
+      <div class="m-row"><span>Costo del premio</span><span id="m-cost">0</span></div>
+      <div class="m-row total"><span>Te quedarán</span><span id="m-remaining">0</span></div>
+    </div>
+    <div class="m-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="m-confirm">✅ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ============ Datos ============ */
+const CATEGORIES = [
+  {id:'todos', label:'Todos'},
+  {id:'conos', label:'Conos'},
+  {id:'postres', label:'Copas y postres'},
+  {id:'batidos', label:'Batidos y café'},
+  {id:'potes', label:'Potes'},
+  {id:'paletas', label:'Paletas'},
+];
+
+const PRODUCTS = [
+  {id:1, name:'Cono Clásico', emoji:'🍦', desc:'Vainilla, chocolate o fresa', price:55, cat:'conos'},
+  {id:2, name:'Cono Bañado', emoji:'🍫', desc:'Bañado en chocolate con nueces', price:95, cat:'conos'},
+  {id:3, name:'Copa La Nena', emoji:'🍨', desc:'2 bolas, crema, salsa y cereza', price:140, cat:'postres'},
+  {id:4, name:'Banana Split', emoji:'🍌', desc:'3 bolas con salsas y frutas', price:180, cat:'postres'},
+  {id:5, name:'Brownie con Helado', emoji:'🍫', desc:'Brownie tibio con bola de helado', price:165, cat:'postres'},
+  {id:6, name:'Alfajor Artesanal', emoji:'🍪', desc:'Relleno de dulce de leche', price:50, cat:'postres'},
+  {id:7, name:'Milkshake', emoji:'🥤', desc:'Vainilla, chocolate, fresa u oreo', price:120, cat:'batidos'},
+  {id:8, name:'Café Frappé', emoji:'☕', desc:'Café helado con crema batida', price:125, cat:'batidos'},
+  {id:9, name:'Pote ½ Litro', emoji:'🍨', desc:'Elige tus 2 sabores favoritos', price:220, cat:'potes'},
+  {id:10, name:'Pote 1 Litro', emoji:'🍨', desc:'Elige tus 4 sabores favoritos', price:380, cat:'potes'},
+  {id:11, name:'Paleta de Mango', emoji:'🥭', desc:'Con chile y limón', price:60, cat:'paletas'},
+  {id:12, name:'Paleta de Fresa', emoji:'🍓', desc:'Con leche condensada', price:60, cat:'paletas'},
+];
+
+const REWARDS = [
+  {id:101, name:'Topping Extra', emoji:'🍫', desc:'Crema, salsa o nueces extra', cost:30},
+  {id:102, name:'Paleta Artesanal', emoji:'🍓', desc:'La que prefieras del día', cost:50},
+  {id:103, name:'Cono Clásico', emoji:'🍦', desc:'El sabor que quieras', cost:60},
+  {id:104, name:'Milkshake', emoji:'🥤', desc:'Vainilla, chocolate u oreo', cost:120},
+  {id:105, name:'Copa La Nena', emoji:'🍨', desc:'Nuestra copa insignia', cost:150},
+  {id:106, name:'2x1 en Copas', emoji:'🎟️', desc:'Cupón: paga 1 y llévate 2', cost:200},
+  {id:107, name:'Pote ½ Litro', emoji:'🍨', desc:'Con los sabores que elijas', cost:230},
+];
+
+/* ============ Estado ============ */
+const STORE_KEY = 'laNenaPuntos_v1';
+let state = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){ const s = JSON.parse(raw); if(typeof s.points === 'number' && Array.isArray(s.history)) return s; }
+  }catch(e){}
+  return {
+    points: 120,
+    history: [{type:'plus', label:'Puntos de bienvenida 🎉', date: Date.now(), amount: 120}]
+  };
+}
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} }
+
+/* ============ Utilidades ============ */
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString('es');
+
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+function confetti(){
+  const colors = ['#ff5e9c','#8b5cf6','#3ecfae','#ffd166','#ff8fab'];
+  for(let i=0;i<46;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    const size = 6 + Math.random()*8;
+    c.style.cssText = `left:${Math.random()*100}vw;width:${size}px;height:${size*.6}px;background:${colors[i%colors.length]};animation-duration:${1.6+Math.random()*1.4}s;animation-delay:${Math.random()*.5}s`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(), 3800);
+  }
+}
+
+function addMovement(type, label, amount){
+  state.history.unshift({type, label, date: Date.now(), amount});
+  if(state.history.length > 60) state.history.pop();
+}
+function addPoints(amount, label){
+  state.points += amount;
+  addMovement('plus', label, amount);
+  save(); renderAll();
+}
+function subtractPoints(amount, label){
+  state.points = Math.max(0, state.points - amount);
+  addMovement('minus', label, amount);
+  save(); renderAll();
+}
+
+/* ============ Render ============ */
+let currentFilter = 'todos';
+
+function renderChips(){
+  $('chips').innerHTML = CATEGORIES.map(c =>
+    `<button class="chip ${c.id===currentFilter?'active':''}" onclick="setFilter('${c.id}')">${c.label}</button>`
+  ).join('');
+}
+function setFilter(id){ currentFilter = id; renderChips(); renderProducts(); }
+
+function renderProducts(){
+  const list = PRODUCTS.filter(p => currentFilter==='todos' || p.cat===currentFilter);
+  $('products-grid').innerHTML = list.map(p => `
+    <div class="card">
+      <div class="emoji">${p.emoji}</div>
+      <h3>${p.name}</h3>
+      <div class="desc">${p.desc}</div>
+      <div class="card-foot">
+        <span class="price">$${fmt(p.price)}</span>
+        <span class="earn">+${fmt(p.price)} pts</span>
+      </div>
+      <button class="btn-buy" onclick="buyProduct(${p.id})">🛍️ Comprar y sumar puntos</button>
+    </div>
+  `).join('');
+}
+
+function renderRewards(){
+  $('rewards-grid').innerHTML = REWARDS.map(r => {
+    const can = state.points >= r.cost;
+    const missing = can ? '' : `Te faltan ${fmt(r.cost - state.points)} pts`;
+    return `
+      <div class="reward">
+        <div class="emoji">${r.emoji}</div>
+        <h3>${r.name}</h3>
+        <div class="desc">${r.desc}</div>
+        <div class="cost">⭐ ${fmt(r.cost)}<small> pts</small></div>
+        <button class="btn-redeem" ${can?'':'disabled'} onclick="openRedeem(${r.id})">
+          ${can ? '🎁 Canjear' : 'Puntos insuficientes'}
+        </button>
+        <div class="missing">${missing}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function nextTarget(){
+  const sorted = [...REWARDS].sort((a,b)=>a.cost-b.cost);
+  return sorted.find(r => r.cost > state.points) || null;
+}
+
+function renderPoints(){
+  $('pill-points').textContent = fmt(state.points);
+  $('card-points').textContent = fmt(state.points);
+  $('balance-points').textContent = fmt(state.points);
+
+  const target = nextTarget();
+  const fill = $('progress-fill'), hint = $('progress-hint');
+  if(target){
+    const prevMax = Math.max(...REWARDS.filter(r=>r.cost<=state.points).map(r=>r.cost), 0);
+    const span = target.cost - prevMax;
+    const pct = span > 0 ? Math.round(((state.points - prevMax) / span) * 100) : 0;
+    fill.style.width = Math.min(100, Math.max(4, pct)) + '%';
+    hint.textContent = `Te faltan ${fmt(target.cost - state.points)} pts para: ${target.name} ${target.emoji}`;
+  }else{
+    fill.style.width = '100%';
+    hint.textContent = '¡Tienes todos los premios al alcance! 🎉';
+  }
+}
+
+function renderHistory(){
+  const ul = $('history-list');
+  if(!state.history.length){ ul.innerHTML = '<li class="empty">Aún no tienes movimientos.</li>'; return; }
+  ul.innerHTML = state.history.map(h => {
+    const d = new Date(h.date);
+    const date = d.toLocaleDateString('es', {day:'numeric', month:'short'}) + ' · ' + d.toLocaleTimeString('es', {hour:'2-digit', minute:'2-digit'});
+    return `
+      <li>
+        <div class="h-ico ${h.type}">${h.type==='plus' ? '⬆️' : '🎁'}</div>
+        <div class="h-info"><div class="t">${h.label}</div><div class="d">${date}</div></div>
+        <div class="h-amt ${h.type}">${h.type==='plus' ? '+' : '−'}${fmt(h.amount)} pts</div>
+      </li>
+    `;
+  }).join('');
+}
+
+function renderAll(){ renderPoints(); renderRewards(); renderHistory(); }
+
+/* ============ Acciones ============ */
+function buyProduct(id){
+  const p = PRODUCTS.find(x => x.id === id);
+  if(!p) return;
+  addPoints(p.price, `Compra: ${p.name} ${p.emoji}`);
+  toast(`¡Compra registrada! +${fmt(p.price)} puntos`);
+}
+
+function simulateVisit(){
+  const menu = [
+    {label:'Cono Clásico 🍦', amt:55},
+    {label:'Copa La Nena 🍨', amt:140},
+    {label:'Milkshake 🥤', amt:120},
+    {label:'Pote ½ Litro 🍨', amt:220},
+  ];
+  const pick = menu[Math.floor(Math.random()*menu.length)];
+  addPoints(pick.amt, `Compra: ${pick.label}`);
+  toast(`Compra simulada (${pick.label}) +${fmt(pick.amt)} pts`);
+}
+
+function resetAccount(){
+  localStorage.removeItem(STORE_KEY);
+  state = load();
+  renderAll();
+  toast('Cuenta reiniciada · 120 puntos de bienvenida');
+}
+
+/* ---- Modal de canje ---- */
+let pendingReward = null;
+
+function openRedeem(id){
+  const r = REWARDS.find(x => x.id === id);
+  if(!r) return;
+  pendingReward = r;
+  $('m-emoji').textContent = r.emoji;
+  $('m-title').textContent = r.name;
+  $('m-desc').textContent = r.desc;
+  $('m-current').textContent = fmt(state.points) + ' pts';
+  $('m-cost').textContent = '−' + fmt(r.cost) + ' pts';
+  $('m-remaining').textContent = fmt(state.points - r.cost) + ' pts';
+  $('overlay').classList.add('open');
+}
+function closeModal(){ $('overlay').classList.remove('open'); pendingReward = null; }
+
+$('m-confirm').addEventListener('click', () => {
+  if(!pendingReward) return;
+  const r = pendingReward;
+  if(state.points < r.cost){ toast('No tienes puntos suficientes 😢'); closeModal(); return; }
+  subtractPoints(r.cost, `Canje: ${r.name} ${r.emoji}`);
+  closeModal();
+  confetti();
+  toast(`¡Canje exitoso! Disfruta tu ${r.name} ${r.emoji}`);
+});
+
+$('overlay').addEventListener('click', e => { if(e.target === $('overlay')) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+/* ---- Navegación inferior: marcar sección visible ---- */
+const bnLinks = [...document.querySelectorAll('.bn-item')];
+const sectionObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      bnLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id));
+    }
+  });
+}, {rootMargin:'-40% 0px -55% 0px'});
+['inicio','productos','canjear','mis-puntos'].forEach(id => {
+  const el = document.getElementById(id);
+  if(el) sectionObserver.observe(el);
+});
+
+/* ============ Inicio ============ */
+renderChips();
+renderProducts();
+renderAll();
+$('footer-note').textContent = '© ' + new Date().getFullYear() + ' · Los puntos se guardan localmente en este dispositivo (demo)';
+</script>
+</body>
+</html>

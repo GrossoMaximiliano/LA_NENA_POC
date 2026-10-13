@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#FFFDF9" />
+  <title>Heladería La Nena · Sumá puntos con cada compra</title>
+  <meta name="description" content="Club de clientes de Heladería La Nena: consultá tus puntos, canjeá premios y aprovechá tus cupones." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23FBE995'/%3E%3Cpath d='M22 32h20L32 54z' fill='%23E9BC85'/%3E%3Cpath d='M20 32a12 12 0 0 1 24 0z' fill='%23F48C9E'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Introducción (usa intro.gif; se retira del DOM al terminar, no vuelve en navegación interna) -->
+  <div id="intro" class="intro" role="dialog" aria-modal="true" aria-label="Bienvenida a Heladería La Nena">
+    <div class="intro__contenido">
+      <div class="intro__gif-caja" id="intro-caja">
+        <img id="intro-gif" src="intro.gif" alt="Animación de bienvenida de Heladería La Nena" />
+      </div>
+      <p class="intro__pie">Helado Artesanal · Desde 1980</p>
+      <button id="intro-saltar" class="btn btn--fantasma btn--chico" type="button" hidden>Saltar introducción</button>
+    </div>
+  </div>
+
+  <!-- Aplicación -->
+  <div id="app" class="app" hidden>
+    <header class="cabecera">
+      <div class="cabecera__fila">
+        <a class="marca" href="#/inicio" aria-label="Heladería La Nena — ir al inicio">
+          <span class="marca__disco" id="marca-disco" aria-hidden="true"></span>
+          <span class="marca__texto">
+            <span class="marca__nombre">La Nena</span>
+            <span class="marca__sub">Helado Artesanal · Desde 1980</span>
+          </span>
+        </a>
+        <a id="btn-avatar" class="avatar" href="#/cuenta" aria-label="Ir a mi cuenta" hidden></a>
+      </div>
+      <p id="cinta-demo" class="cinta-demo" hidden>Datos de demostración: ni los puntos ni los canjes son reales.</p>
+    </header>
+
+    <main id="vista" class="vista" tabindex="-1"></main>
+
+    <nav class="navinferior" id="nav-inferior" aria-label="Secciones principales">
+      <a class="navinferior__item" href="#/inicio" data-ruta="inicio"><span class="navinferior__icono" data-icono="home"></span><span class="navinferior__texto">Inicio</span></a>
+      <a class="navinferior__item" href="#/premios" data-ruta="premios"><span class="navinferior__icono" data-icono="gift"></span><span class="navinferior__texto">Premios</span></a>
+      <a class="navinferior__item" href="#/cupones" data-ruta="cupones"><span class="navinferior__icono" data-icono="ticket"></span><span class="navinferior__texto">Cupones</span></a>
+      <a class="navinferior__item" href="#/cuenta" data-ruta="cuenta"><span class="navinferior__icono" data-icono="user"></span><span class="navinferior__texto">Mi cuenta</span></a>
+    </nav>
+  </div>
+
+  <!-- Capa para avisos (toasts) y diálogos -->
+  <div id="capas"><div class="avisos" aria-live="polite"></div></div>
+
+    <!-- Orden de carga: config → tipos → utilidades → iconos → store →
+       componentes → servicios → páginas → router → arranque -->
+  <script src="js/config.js"></script>
+  <script src="js/types.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/services/demo-data.js"></script>
+  <script src="js/services/api.js"></script>
+  <script src="js/pages/auth.js"></script>
+  <script src="js/pages/home.js"></script>
+  <script src="js/pages/rewards.js"></script>
+  <script src="js/pages/coupons.js"></script>
+  <script src="js/pages/account.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
